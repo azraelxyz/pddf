@@ -2,12 +2,21 @@ import os
 import hashlib
 import sys
 import time
+import logging
 
 reload(sys)
 sys.setdefaultencoding("UTF-8")
 
 NUM_BLOCKS = 16
 NUM_CHUNKS = 4
+
+logging.basicConfig(level=logging.DEBUG,
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    datefmt='%a, %d %b %Y %H:%M:%S',
+    filename='/tmp/dup_find.log',
+    filemode='w')
+LOG = logging
+
 
 class File:
     def __init__(self, filepath):
@@ -43,8 +52,8 @@ class File:
         try:
             with open(self.filepath, 'rb') as f:
                 for i in range(NUM_CHUNKS):
-                    f.seek(size/NUM_CHUNKS * i)
-                    chunk = f.read(NUM_BLOCKS*hashlib.md5().block_size)
+                    f.seek(size / (NUM_CHUNKS * i))
+                    chunk = f.read(NUM_BLOCKS * hashlib.md5().block_size)
                     chunks.append(chunk)
                 character_chunk = "".join(chunks)
             ret = hashlib.md5(character_chunk).hexdigest()
@@ -81,6 +90,7 @@ class AbstractAlgorithm:
     def dup_files(self):
         ret = list()
         for k, v in self.char_table.iteritems():
+            LOG.debug(k)
             if len(v) > 1:
                 ret.append(v)
         return ret
@@ -89,6 +99,7 @@ class AbstractAlgorithm:
     def filtered_files(self):
         ret = list()
         for k, v in self.char_table.iteritems():
+            LOG.debug(k)
             if len(v) > 1:
                 ret.extend(v)
         return ret
@@ -160,6 +171,7 @@ class DupFinder:
     def find(self):
         file_instances = list()
         for (root, dirs, files) in os.walk(self.path):
+            LOG.debug(dirs)
             for _file in files:
                 filepath = os.path.join(root, _file)
                 if os.path.exists(filepath):
@@ -183,18 +195,21 @@ class DupFinder:
             total_size = total_size + _file.size
         return total_size
 
+
 def size_renderer(size):
-    units = ["B","KB", "MB", "GB", "TB", "PB"]
+    units = ["B", "KB", "MB", "GB", "TB", "PB"]
     i = 0
     value = size * 10
     min_size = 10240
     while value > min_size:
         i = i + 1
         value = value / 1024
-    return "{0} {1}".format(str(value/10), units[i])
+    return "{0} {1}".format(str(value / 10), units[i])
+
 
 def main():
     path = sys.argv[1]
+    LOG.info(path)
 
     if os.path.isfile(path):
         start_time = time.time()
