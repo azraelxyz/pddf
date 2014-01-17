@@ -4,13 +4,14 @@ import sys
 import time
 import logging
 
-reload(sys)
-sys.setdefaultencoding("UTF-8")
+# for python 2.7
+# reload(sys)
+# sys.setdefaultencoding("UTF-8")
 
 NUM_BLOCKS = 16
 NUM_CHUNKS = 4
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.DEBUG,
     format='%(asctime)s %(levelname)-8s %(message)s',
     #filemode='w',
     #filename='/tmp/dup_find.log',
@@ -53,10 +54,12 @@ class File:
         try:
             with open(self.filepath, 'rb') as f:
                 for i in range(NUM_CHUNKS):
-                    f.seek(size / NUM_CHUNKS * i)
+                    f.seek(int(size / NUM_CHUNKS) * i)
                     chunk = f.read(NUM_BLOCKS * hashlib.md5().block_size)
                     chunks.append(chunk)
-                character_chunk = "".join(chunks)
+            character_chunk = bytes()
+            for chunk in chunks:
+                character_chunk = character_chunk + chunk
             ret = hashlib.md5(character_chunk).hexdigest()
         except Exception as e:
             LOG.error("Get {0}'s character error".format(self.path))
@@ -92,7 +95,7 @@ class AbstractAlgorithm:
     @property
     def dup_files(self):
         ret = list()
-        for k, v in self.char_table.iteritems():
+        for k, v in self.char_table.items():
             LOG.debug("{0} {1}".format(k, v))
             LOG.debug(k)
             if len(v) > 1:
@@ -102,7 +105,7 @@ class AbstractAlgorithm:
     @property
     def filtered_files(self):
         ret = list()
-        for k, v in self.char_table.iteritems():
+        for k, v in self.char_table.items():
             LOG.debug("{0} {1}".format(k, v))
             if len(v) > 1:
                 ret.extend(v)
