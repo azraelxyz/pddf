@@ -68,7 +68,7 @@ class File:
 
     @property
     def path(self):
-        return self.filepath.encode('utf8')
+        return self.filepath
 
     @property
     def size(self):
@@ -187,6 +187,16 @@ class DupFinder:
         self.algorithm.set_files(file_instances)
         self.algorithm.find()
 
+    def dump2file(self):
+        with open('output.txt', 'w') as fp:
+            for files in self.dup_files:
+                fp.write("================\n")
+                for _file in files:
+                    fp.write("{0}\n".format(_file.path))
+
+    def dump2csv(self):
+        pass
+
     @property
     def dup_files(self):
         return self.algorithm.dup_files
@@ -228,10 +238,7 @@ def main():
         dup_finder = DupFinder(path, HybridQuick())
         dup_finder.find()
         end_time = time.time()
-        for files in dup_finder.dup_files:
-            print ("================")
-            for _file in files:
-                print (_file.path)
+        dup_finder.dump2file()
         print (end_time - start_time)
         print (size_renderer(dup_finder.dup_size))
 
