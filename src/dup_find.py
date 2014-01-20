@@ -310,7 +310,7 @@ def size_renderer(size):
     while value > min_size:
         i = i + 1
         value = value / 1024
-    return "{0} {1}".format(str(value / 10), units[i])
+    return "{0} {1}".format(str(round(value / 10, 1)), units[i])
 
 
 def main():
