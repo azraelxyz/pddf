@@ -279,7 +279,7 @@ class UnicodeCSVWriter:
             data = self.encoder.encode(data)
         except UnicodeDecodeError:
             # python 2.7
-            data = data = data.decode("utf-8")
+            data = data.decode("utf-8")
             data = self.encoder.encode(data)
         # write to the target stream
         self.stream.write(data)
