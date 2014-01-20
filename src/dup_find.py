@@ -6,10 +6,6 @@ import logging
 import csv
 import io
 import codecs
-try:
-    import StringIO
-except:
-    import io as StringIO
 
 # for python 2.7
 # reload(sys)
@@ -183,6 +179,9 @@ class HybridFull(AbstractAlgorithm):
 
 
 class DupFinder:
+    output_file = 'output.txt'
+    output_csv = 'output.csv'
+
     def __init__(self, path, algorithm):
         self.path = path
         self.algorithm = algorithm
@@ -200,8 +199,7 @@ class DupFinder:
         self.algorithm.find()
 
     def dump2file(self):
-        output_file = 'output.txt'
-        with open(output_file, 'w') as fp:
+        with open(self.output_file, 'w') as fp:
             for files in self.sorted_dup_files:
                 fp.write("================\n")
                 for _file in files:
@@ -209,20 +207,14 @@ class DupFinder:
                     fp.write("Size: {0}, File: {1}\n".format(size, _file.path))
 
     def dump2csv(self):
-        output_file = 'output.csv'
         rows = list()
-        for files in self.dup_files:
+        for files in self.sorted_dup_files:
             data = [size_renderer(files[0].size)]
-            data.append(files[0].size)
+            #data.append(files[0].size)
             data.extend([_file.path for _file in files])
             rows.append(data)
-#            rows = list()
-#            row = ['a1', 'b1', 'c1']
-#            rows.append(row)
-#            row = ['a2', 'b2', 'c2']
-#            rows.append(row)
-        with open(output_file, 'wb') as f:
-            writer = Py3UnicodeWriter(f)
+        with open(self.output_csv, 'wb') as f:
+            writer = UnicodeCSVWriter(f)
             writer.writerows(rows)
 
     @property
@@ -248,7 +240,7 @@ class DupFinder:
         return total_size
 
 
-class Py3UnicodeWriter:
+class UnicodeCSVWriter:
     """
     Python 3 version CSV Writer
     A CSV writer which will write rows to CSV file "f",
@@ -257,48 +249,38 @@ class Py3UnicodeWriter:
 
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
-        self.queue = io.StringIO()
+        try:
+            # python 2.7
+            import StringIO
+            self.queue = StringIO.StringIO()
+        except:
+            # python 3
+            self.queue = io.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
 
     def writerow(self, row):
-        self.writer.writerow([s for s in row])
+        try:
+            # python 3
+            self.writer.writerow([s for s in row])
+        except TypeError:
+            # python 2.7
+#             [s.encode("utf-8") for s in row]
+            import StringIO
+            self.queue = StringIO.StringIO()
+            unicode_row = [unicode(str(s).encode("utf-8")) for s in row]
+            self.writer.writerow(unicode_row)
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
         # ... and reencode it into the target encoding
-        data = self.encoder.encode(data)
-        # write to the target stream
-        self.stream.write(data)
-        # empty queue
-        self.queue.truncate(0)
-
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
-
-
-class Py2UnicodeWriter:
-    """
-    Python 2 version CSV Writer
-    A CSV writer which will write rows to CSV file "f",
-    which is encoded in the given encoding.
-    """
-
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        # Redirect output to a queue
-        self.queue = StringIO.StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
-        self.stream = f
-        self.encoder = codecs.getincrementalencoder(encoding)()
-
-    def writerow(self, row):
-        self.writer.writerow([s.encode("utf-8") for s in row])
-        # Fetch UTF-8 output from the queue ...
-        data = self.queue.getvalue()
-        data = data.decode("utf-8")
-        # ... and reencode it into the target encoding
-        data = self.encoder.encode(data)
+        try:
+            # python 3
+            data = self.encoder.encode(data)
+        except UnicodeDecodeError:
+            # python 2.7
+            data = data = data.decode("utf-8")
+            data = self.encoder.encode(data)
         # write to the target stream
         self.stream.write(data)
         # empty queue
@@ -334,7 +316,7 @@ def main():
         dup_finder = DupFinder(path, HybridQuick())
         dup_finder.find()
         end_time = time.time()
-        dup_finder.dump2file()
+        dup_finder.dump2csv()
         print (end_time - start_time)
         print (size_renderer(dup_finder.dup_size))
 
