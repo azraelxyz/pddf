@@ -202,7 +202,7 @@ class DupFinder:
     def dump2file(self):
         output_file = 'output.txt'
         with open(output_file, 'w') as fp:
-            for files in self.dup_files:
+            for files in self.sorted_dup_files:
                 fp.write("================\n")
                 for _file in files:
                     size = size_renderer(_file.size)
@@ -228,6 +228,13 @@ class DupFinder:
     @property
     def dup_files(self):
         return self.algorithm.dup_files
+
+    @property
+    def sorted_dup_files(self, reverse=True):
+        df = self.algorithm.dup_files
+        sort_files = sorted(df, key=lambda _files: _files[0].size,
+                            reverse=reverse)
+        return sort_files
 
     @property
     def character_table(self):
@@ -327,7 +334,7 @@ def main():
         dup_finder = DupFinder(path, HybridQuick())
         dup_finder.find()
         end_time = time.time()
-        dup_finder.dump2csv()
+        dup_finder.dump2file()
         print (end_time - start_time)
         print (size_renderer(dup_finder.dup_size))
 
