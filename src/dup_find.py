@@ -10,6 +10,7 @@ import logging
 
 NUM_BLOCKS = 16
 NUM_CHUNKS = 4
+UNKNOWN_SYMBOL = "--"
 
 logging.basicConfig(level=logging.DEBUG,
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -25,7 +26,7 @@ class File:
 
     @property
     def md5sum(self):
-        ret = "--"
+        ret = UNKNOWN_SYMBOL
         try:
             with open(self.filepath, 'rb') as fp:
                 chunk_size = 1024 * hashlib.md5().block_size
@@ -50,7 +51,7 @@ class File:
     def character(self):
         chunks = list()
         size = self.size
-        ret = "--"
+        ret = UNKNOWN_SYMBOL
         try:
             with open(self.filepath, 'rb') as f:
                 for i in range(NUM_CHUNKS):
@@ -116,6 +117,8 @@ class FullScanner(AbstractAlgorithm):
     def find(self):
         for _file in self.files:
             md5sum = _file.md5sum
+            if md5sum == UNKNOWN_SYMBOL:
+                continue
             entry = self.char_table.get(md5sum)
             if entry:
                 entry.append(_file)
@@ -138,6 +141,8 @@ class CharacterScanner(AbstractAlgorithm):
     def find(self):
         for _file in self.files:
             character = _file.character
+            if character == UNKNOWN_SYMBOL:
+                continue
             entry = self.char_table.get(character)
             if entry:
                 entry.append(_file)
