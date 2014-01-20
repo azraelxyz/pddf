@@ -1,0 +1,121 @@
+import os
+import csv
+import io
+import codecs
+
+import utils
+from core.file import File
+from utils import LOG
+
+
+class DupFinder:
+    output_file = 'output.txt'
+    output_csv = 'output.csv'
+
+    def __init__(self, path, algorithm):
+        self.path = path
+        self.algorithm = algorithm
+
+    def find(self):
+        file_instances = list()
+        for (root, dirs, files) in os.walk(self.path):
+            LOG.debug("{0} {1} {2}".format(root, dirs, files))
+            for _file in files:
+                filepath = os.path.join(root, _file)
+                if os.path.exists(filepath):
+                    file_instance = File(filepath)
+                    file_instances.append(file_instance)
+        self.algorithm.set_files(file_instances)
+        self.algorithm.find()
+
+    def dump2file(self):
+        with open(self.output_file, 'w') as fp:
+            for files in self.sorted_dup_files:
+                fp.write("================\n")
+                for _file in files:
+                    size = utils.size_renderer(_file.size)
+                    fp.write("Size: {0}, File: {1}\n".format(size, _file.path))
+
+    def dump2csv(self):
+        rows = list()
+        for files in self.sorted_dup_files:
+            data = [utils.size_renderer(files[0].size)]
+            #data.append(files[0].size)
+            data.extend([_file.path for _file in files])
+            rows.append(data)
+        with open(self.output_csv, 'wb') as f:
+            writer = UnicodeCSVWriter(f)
+            writer.writerows(rows)
+
+    @property
+    def dup_files(self):
+        return self.algorithm.dup_files
+
+    @property
+    def sorted_dup_files(self, reverse=True):
+        df = self.algorithm.dup_files
+        sort_files = sorted(df, key=lambda _files: _files[0].size,
+                            reverse=reverse)
+        return sort_files
+
+    @property
+    def character_table(self):
+        return self.algorithm.char_table
+
+    @property
+    def dup_size(self):
+        total_size = 0
+        for _file in self.algorithm.filtered_files:
+            total_size = total_size + _file.size
+        return total_size
+
+
+class UnicodeCSVWriter:
+    """
+    Python 3 version CSV Writer
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        # Redirect output to a queue
+        try:
+            # python 2.7
+            import StringIO
+            self.queue = StringIO.StringIO()
+        except:
+            # python 3
+            self.queue = io.StringIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        try:
+            # python 3
+            self.writer.writerow([s for s in row])
+        except TypeError:
+            # python 2.7
+#             [s.encode("utf-8") for s in row]
+            import StringIO
+            self.queue = StringIO.StringIO()
+            unicode_row = [unicode(str(s).encode("utf-8")) for s in row]
+            self.writer.writerow(unicode_row)
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        # ... and reencode it into the target encoding
+        try:
+            # python 3
+            data = self.encoder.encode(data)
+        except UnicodeDecodeError:
+            # python 2.7
+            data = data.decode("utf-8")
+            data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
