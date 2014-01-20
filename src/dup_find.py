@@ -26,7 +26,7 @@ def main():
     else:
         start_time = time.time()
         algorithm = core.algorithm.HybridQuick()
-        dup_finder = core.dup_finder.DupFinder(path, algorithm)
+        dup_finder = core.dup_finder.DupFinder([path], algorithm)
         dup_finder.find()
         end_time = time.time()
         dup_finder.dump2csv()

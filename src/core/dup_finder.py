@@ -12,21 +12,26 @@ class DupFinder:
     output_file = 'output.txt'
     output_csv = 'output.csv'
 
-    def __init__(self, path, algorithm):
-        self.path = path
+    def __init__(self, path_list, algorithm):
+        self.path_list = path_list
         self.algorithm = algorithm
 
     def find(self):
+        for path in self.path_list:
+            file_instances = self.__walk(path)
+        self.algorithm.set_files(file_instances)
+        self.algorithm.find()
+
+    def __walk(self, path):
         file_instances = list()
-        for (root, dirs, files) in os.walk(self.path):
+        for (root, dirs, files) in os.walk(path):
             LOG.debug("{0} {1} {2}".format(root, dirs, files))
             for _file in files:
                 filepath = os.path.join(root, _file)
                 if os.path.exists(filepath):
                     file_instance = File(filepath)
                     file_instances.append(file_instance)
-        self.algorithm.set_files(file_instances)
-        self.algorithm.find()
+        return file_instances
 
     def dump2file(self):
         with open(self.output_file, 'w') as fp:
