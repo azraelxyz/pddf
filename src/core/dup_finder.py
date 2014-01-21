@@ -17,15 +17,17 @@ class DupFinder:
         self.algorithm = algorithm
 
     def find(self):
+        LOG.info("%s walk start", self.__class__.__name__)
         for path in self.path_list:
             file_instances = self.__walk(path)
+        LOG.info("%s walk end", self.__class__.__name__)
         self.algorithm.set_files(file_instances)
         self.algorithm.find()
 
     def __walk(self, path):
         file_instances = list()
         for (root, dirs, files) in os.walk(path):
-            LOG.debug("{0} {1} {2}".format(root, dirs, files))
+#            LOG.debug("{0} {1} {2}".format(root, dirs, files))
             for _file in files:
                 filepath = os.path.join(root, _file)
                 if os.path.exists(filepath):
@@ -34,6 +36,7 @@ class DupFinder:
         return file_instances
 
     def dump2file(self):
+        LOG.debug("%s dump2file", self.__class__.__name__)
         with open(self.output_file, 'w') as fp:
             for files in self.sorted_dup_files:
                 fp.write("================\n")
@@ -42,6 +45,7 @@ class DupFinder:
                     fp.write("Size: {0}, File: {1}\n".format(size, _file.path))
 
     def dump2csv(self):
+        LOG.debug("%s dump2csv", self.__class__.__name__)
         rows = list()
         for files in self.sorted_dup_files:
             data = [utils.size_renderer(files[0].size)]
@@ -101,7 +105,6 @@ class UnicodeCSVWriter:
             self.writer.writerow([s for s in row])
         except TypeError:
             # python 2.7
-#             [s.encode("utf-8") for s in row]
             import StringIO
             self.queue = StringIO.StringIO()
             unicode_row = [unicode(str(s).encode("utf-8")) for s in row]

@@ -21,6 +21,7 @@ def main():
     if os.path.isfile(path):
         start_time = time.time()
         print (File(path).md5sum)
+        print (File(path).size)
         end_time = time.time()
         print (end_time - start_time)
     else:
@@ -29,7 +30,7 @@ def main():
         dup_finder = core.dup_finder.DupFinder([path], algorithm)
         dup_finder.find()
         end_time = time.time()
-        dup_finder.dump2csv()
+        dup_finder.dump2file()
         print (end_time - start_time)
         print (utils.size_renderer(dup_finder.dup_size))
 
