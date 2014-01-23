@@ -2,13 +2,16 @@
 try:
     # python 3
     import tkinter
-except:
+    from tkinter import messagebox as messagebox
+except ImportError:
     # python 2
     import Tkinter as tkinter
+    import tkMessageBox as messagebox
+
 try:
     # python 2
     import ttk
-except:
+except ImportError:
     # python 3
     import tkinter.ttk as ttk
 
@@ -17,7 +20,6 @@ import core.algorithm
 import core.dup_finder
 from utils import LOG
 
-# GUI config
 GUI_INPUT_PATH_NUM = 1
 
 
@@ -64,3 +66,4 @@ class DupFinderWindow(tkinter.Frame):
         dup_finder.find()
         dup_finder.dump2file("output.txt")
         dup_finder.dump2csv("output.csv")
+        messagebox.showinfo('', 'find complete')
