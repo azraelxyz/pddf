@@ -25,6 +25,7 @@ from utils import LOG
 
 INITIAL_DIR = "."
 
+
 class DupFinderWindow(tkinter.Frame):
     def __init__(self, master=None):
         tkinter.Frame.__init__(self, master)
