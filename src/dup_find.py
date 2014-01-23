@@ -26,8 +26,12 @@ def main():
         print (end_time - start_time)
     else:
         start_time = time.time()
-        algorithm = core.algorithm.HybridQuick()
-        dup_finder = core.dup_finder.DupFinder([path], algorithm)
+        filters = [
+            core.algorithm.SizeFilter(),
+            core.algorithm.CharacterFilter(),
+#             core.algorithm.FullScanner()
+        ]
+        dup_finder = core.dup_finder.DupFinder([path], filters)
         dup_finder.find()
         end_time = time.time()
         dup_finder.dump2file("output.txt")

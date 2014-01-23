@@ -9,17 +9,22 @@ from utils import LOG
 
 
 class DupFinder:
-    def __init__(self, path_list, algorithm):
+    def __init__(self, path_list, filter_list):
         self.path_list = path_list
-        self.algorithm = algorithm
+        self.filter_list = filter_list
 
     def find(self):
         LOG.info("%s walk start", self.__class__.__name__)
         for path in self.path_list:
             file_instances = self.__walk(path)
         LOG.info("%s walk end", self.__class__.__name__)
-        self.algorithm.set_files(file_instances)
-        self.algorithm.find()
+        prev_filter = self.filter_list[0]
+        prev_filter.set_files(file_instances)
+        prev_filter.find()
+        for _filter in self.filter_list[1:]:
+            _filter.set_files(prev_filter.filtered_files)
+            _filter.find()
+            prev_filter = _filter
 
     def __walk(self, path):
         file_instances = list()
@@ -53,25 +58,24 @@ class DupFinder:
             writer = UnicodeCSVWriter(f)
             writer.writerows(rows)
 
-    @property
     def dup_files(self):
-        return self.algorithm.dup_files
+        return self.filter_list[-1].dup_files
 
     @property
     def sorted_dup_files(self, reverse=True):
-        df = self.algorithm.dup_files
+        df = self.filter_list[-1].dup_files
         sort_files = sorted(df, key=lambda _files: _files[0].size,
                             reverse=reverse)
         return sort_files
 
     @property
     def character_table(self):
-        return self.algorithm.char_table
+        return self.filter_list[-1].char_table
 
     @property
     def dup_size(self):
         total_size = 0
-        for _file in self.algorithm.filtered_files:
+        for _file in self.filter_list[-1].filtered_files:
             total_size = total_size + _file.size
         return total_size
 

@@ -2,7 +2,7 @@ import setting
 from utils import LOG
 
 
-class AbstractAlgorithm:
+class AbstractFilter:
     def __init__(self):
         self.char_table = dict()
         self.files = list()
@@ -30,13 +30,13 @@ class AbstractAlgorithm:
         LOG.debug("%s filtered_files", self.__class__.__name__)
         ret = list()
         for k, v in self.char_table.items():
-            LOG.debug("{0} {1}".format(k, v))
+            #LOG.debug("{0} {1}".format(k, v))
             if len(v) > 1:
                 ret.extend(v)
         return ret
 
 
-class FullScanner(AbstractAlgorithm):
+class FullScanner(AbstractFilter):
     def find(self):
         LOG.debug("%s find", self.__class__.__name__)
         for _file in self.files:
@@ -50,7 +50,7 @@ class FullScanner(AbstractAlgorithm):
                 self.char_table[md5sum] = [_file]
 
 
-class SizeChecker(AbstractAlgorithm):
+class SizeFilter(AbstractFilter):
     def find(self):
         LOG.debug("%s find", self.__class__.__name__)
         for _file in self.files:
@@ -62,7 +62,7 @@ class SizeChecker(AbstractAlgorithm):
                 self.char_table[character] = [_file]
 
 
-class CharacterScanner(AbstractAlgorithm):
+class CharacterFilter(AbstractFilter):
     def find(self):
         LOG.debug("%s find", self.__class__.__name__)
         for _file in self.files:
@@ -74,34 +74,3 @@ class CharacterScanner(AbstractAlgorithm):
                 entry.append(_file)
             else:
                 self.char_table[character] = [_file]
-
-
-class HybridQuick(AbstractAlgorithm):
-    def find(self):
-        LOG.debug("%s find", self.__class__.__name__)
-        LOG.debug("size_checker find start")
-        size_checker = SizeChecker()
-        size_checker.set_files(self.files)
-        size_checker.find()
-        LOG.debug("size_checker find finish")
-        LOG.debug("character_scanner find start")
-        character_scanner = CharacterScanner()
-        character_scanner.set_files(size_checker.filtered_files)
-        character_scanner.find()
-        LOG.info("character_scanner find finish")
-        self.char_table = character_scanner.char_table
-
-
-class HybridFull(AbstractAlgorithm):
-    def find(self):
-        LOG.debug("%s find", self.__class__.__name__)
-        size_checker = SizeChecker()
-        size_checker.set_files(self.files)
-        size_checker.find()
-        character_scanner = CharacterScanner()
-        character_scanner.set_files(size_checker.filtered_files)
-        character_scanner.find()
-        full_scanner = FullScanner()
-        full_scanner.set_files(character_scanner.filtered_files)
-        full_scanner.find()
-        self.char_table = full_scanner.char_table
