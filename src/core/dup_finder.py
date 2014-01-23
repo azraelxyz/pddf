@@ -9,9 +9,6 @@ from utils import LOG
 
 
 class DupFinder:
-    output_file = 'output.txt'
-    output_csv = 'output.csv'
-
     def __init__(self, path_list, algorithm):
         self.path_list = path_list
         self.algorithm = algorithm
@@ -35,16 +32,16 @@ class DupFinder:
                     file_instances.append(file_instance)
         return file_instances
 
-    def dump2file(self):
+    def dump2file(self, output_file):
         LOG.debug("%s dump2file", self.__class__.__name__)
-        with open(self.output_file, 'w') as fp:
+        with open(output_file, 'w') as fp:
             for files in self.sorted_dup_files:
                 fp.write("================\n")
                 for _file in files:
                     size = utils.size_renderer(_file.size)
                     fp.write("Size: {0}, File: {1}\n".format(size, _file.path))
 
-    def dump2csv(self):
+    def dump2csv(self, output_csv):
         LOG.debug("%s dump2csv", self.__class__.__name__)
         rows = list()
         for files in self.sorted_dup_files:
@@ -52,7 +49,7 @@ class DupFinder:
             #data.append(files[0].size)
             data.extend([_file.path for _file in files])
             rows.append(data)
-        with open(self.output_csv, 'wb') as f:
+        with open(output_csv, 'wb') as f:
             writer = UnicodeCSVWriter(f)
             writer.writerows(rows)
 
