@@ -28,8 +28,7 @@ def main():
         start_time = time.time()
         filters = [
             core.algorithm.SizeFilter(),
-            core.algorithm.CharacterFilter(),
-#             core.algorithm.FullScanner()
+            core.algorithm.CharacterFilter()
         ]
         dup_finder = core.dup_finder.DupFinder([path], filters)
         dup_finder.find()

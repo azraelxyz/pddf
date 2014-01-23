@@ -3,10 +3,10 @@ try:
 except:
     import Tkinter as tkinter
 
-import gui.main
+import gui.main_frame
 
 
 if __name__ == '__main__':
     root = tkinter.Tk()
-    app = gui.main.DupFinderWindow(master=root)
+    app = gui.main_frame.DupFinderWindow(master=root)
     app.mainloop()
