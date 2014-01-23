@@ -1,10 +1,17 @@
 # coding=utf-8
 try:
+    # python 3
     import tkinter
 except:
+    # python 2
     import Tkinter as tkinter
+try:
+    # python 2
+    import ttk
+except:
+    # python 3
+    import tkinter.ttk as ttk
 
-#import ttk
 
 import core.algorithm
 import core.dup_finder
@@ -37,7 +44,7 @@ class DupFinderWindow(tkinter.Frame):
             self.path_field.grid(row=i, column=1, columnspan=6)
             self.path_fields.append(self.path_field)
 
-        self.find_btn = tkinter.Button(self)
+        self.find_btn = ttk.Button(self)
         self.find_btn["text"] = "Find"
         self.find_btn["command"] = self.start_find
         self.find_btn.grid(row=GUI_INPUT_PATH_NUM + 1, column=6)
