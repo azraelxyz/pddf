@@ -26,8 +26,8 @@ class DupFinder:
         self.__update_step(prev_filter)
         prev_filter.find()
         for _filter in self.filter_list[1:]:
-            self.__update_step(prev_filter)
             _filter.set_files(prev_filter.filtered_files)
+            self.__update_step(_filter)
             _filter.find()
             prev_filter = _filter
 
@@ -36,6 +36,9 @@ class DupFinder:
 
     def get_progress(self):
         return self.instance.progress
+
+    def get_step(self):
+        return self.instance.__class__.__name__
 
     def dump2file(self, output_file):
         LOG.debug("%s dump2file", self.__class__.__name__)
@@ -58,6 +61,7 @@ class DupFinder:
             writer = UnicodeCSVWriter(f)
             writer.writerows(rows)
 
+    @property
     def dup_files(self):
         return self.filter_list[-1].dup_files
 
