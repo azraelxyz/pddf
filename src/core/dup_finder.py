@@ -12,30 +12,30 @@ class DupFinder:
     def __init__(self, path_list, filter_list):
         self.path_list = path_list
         self.filter_list = filter_list
+        self.progress = 0
+        self.step = None
 
     def find(self):
         LOG.info("%s walk start", self.__class__.__name__)
-        for path in self.path_list:
-            file_instances = self.__walk(path)
+        worker = Walker()
+        self.__update_step(worker)
+        file_instances = worker.walk(self.path_list)
         LOG.info("%s walk end", self.__class__.__name__)
         prev_filter = self.filter_list[0]
         prev_filter.set_files(file_instances)
+        self.__update_step(prev_filter)
         prev_filter.find()
         for _filter in self.filter_list[1:]:
+            self.__update_step(prev_filter)
             _filter.set_files(prev_filter.filtered_files)
             _filter.find()
             prev_filter = _filter
 
-    def __walk(self, path):
-        file_instances = list()
-        for (root, dirs, files) in os.walk(path):
-#            LOG.debug("{0} {1} {2}".format(root, dirs, files))
-            for _file in files:
-                filepath = os.path.join(root, _file)
-                if os.path.exists(filepath):
-                    file_instance = File(filepath)
-                    file_instances.append(file_instance)
-        return file_instances
+    def __update_step(self, instance):
+        self.step = instance
+
+    def get_progress(self):
+        return self.instance.progress
 
     def dump2file(self, output_file):
         LOG.debug("%s dump2file", self.__class__.__name__)
@@ -78,6 +78,32 @@ class DupFinder:
         for _file in self.filter_list[-1].filtered_files:
             total_size = total_size + _file.size
         return total_size
+
+
+class Walker:
+    def __init__(self):
+        self.progress = 0
+
+    def get_progress(self):
+        return self.progress
+
+    def walk(self, path_list):
+        file_instances = list()
+        for path in path_list:
+            file_instances.extend(self.__path_walk(path))
+        return file_instances
+
+    def __path_walk(self, path):
+        file_instances = list()
+        for (root, dirs, files) in os.walk(path):
+#            LOG.debug("{0} {1} {2}".format(root, dirs, files))
+            for _file in files:
+                filepath = os.path.join(root, _file)
+                if os.path.exists(filepath):
+                    file_instance = File(filepath)
+                    file_instances.append(file_instance)
+                    self.progress = self.progress + 1
+        return file_instances
 
 
 class UnicodeCSVWriter:

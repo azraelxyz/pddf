@@ -6,6 +6,7 @@ class AbstractFilter:
     def __init__(self):
         self.char_table = dict()
         self.files = list()
+        self.progress = 0
 
     def set_files(self, files):
         LOG.debug("%s set_files", self.__class__.__name__)
@@ -13,6 +14,9 @@ class AbstractFilter:
 
     def find(self):
         raise Exception('find not implement')
+
+    def get_progress(self):
+        return self.progress
 
     @property
     def dup_files(self):
@@ -48,6 +52,7 @@ class FullScanner(AbstractFilter):
                 entry.append(_file)
             else:
                 self.char_table[md5sum] = [_file]
+            self.progress = self.progress + 1
 
 
 class SizeFilter(AbstractFilter):
@@ -60,6 +65,7 @@ class SizeFilter(AbstractFilter):
                 entry.append(_file)
             else:
                 self.char_table[character] = [_file]
+            self.progress = self.progress + 1
 
 
 class CharacterFilter(AbstractFilter):
@@ -74,3 +80,4 @@ class CharacterFilter(AbstractFilter):
                 entry.append(_file)
             else:
                 self.char_table[character] = [_file]
+            self.progress = self.progress + 1

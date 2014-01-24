@@ -33,7 +33,7 @@ def main():
         dup_finder = core.dup_finder.DupFinder([path], filters)
         dup_finder.find()
         end_time = time.time()
-        dup_finder.dump2file("output.txt")
+        #dup_finder.dump2file("output.txt")
         dup_finder.dump2csv("output.csv")
         print (end_time - start_time)
         print (utils.size_renderer(dup_finder.dup_size))
