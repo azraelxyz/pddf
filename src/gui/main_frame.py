@@ -39,7 +39,7 @@ class DupFinderWindow(tkinter.Frame):
         self.path_label["text"] = "Path(Required):"
         self.path_label.grid(row=0, column=0)
 
-        self.path_field = tkinter.Label(self, compound=tkinter.LEFT)
+        self.path_field = tkinter.Label(self)
         self.path_field["width"] = 50
         self.path_field["text"] = INITIAL_DIR
         self.path_field.grid(row=0, column=1, columnspan=6)
