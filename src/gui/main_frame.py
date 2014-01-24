@@ -17,13 +17,15 @@ except ImportError:
     # python 3
     import tkinter.ttk as ttk
 
+import os
+
 import core.algorithm
 import core.dup_finder
 from utils import LOG
 
 #GUI_INPUT_PATH_NUM = 1
 
-INITIAL_DIR = "."
+INITIAL_DIR = os.getcwd()
 
 
 class DupFinderWindow(tkinter.Frame):
@@ -37,9 +39,9 @@ class DupFinderWindow(tkinter.Frame):
         self.path_label["text"] = "Path(Required):"
         self.path_label.grid(row=0, column=0)
 
-        self.path_field = tkinter.Label(self)
+        self.path_field = tkinter.Label(self, compound=tkinter.LEFT)
         self.path_field["width"] = 50
-        self.path_field["text"] = "."
+        self.path_field["text"] = INITIAL_DIR
         self.path_field.grid(row=0, column=1, columnspan=6)
 
         self.dir_btn = ttk.Button(self)
