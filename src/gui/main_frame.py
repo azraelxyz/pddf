@@ -172,6 +172,10 @@ class DupFinderWindow(tkinter.Frame):
 
     def start_find(self):
         LOG.debug("start_find button click")
+        do_it = messagebox.askyesno('',
+                    'It may take several minutes to complete please wait')
+        if not do_it:
+            return
         self.disable_all_btns()
         # start to find
         paths = [self.path_field1.get()]
@@ -193,8 +197,11 @@ class DupFinderWindow(tkinter.Frame):
         dup_finder = core.dup_finder.DupFinder(paths, filters)
         dup_finder.find()
         if (self.output_csv.get()):
-            dup_finder.dump2csv("output.csv")
+            output_file = os.path.join(os.getcwd(), "output.csv")
+            dup_finder.dump2csv(output_file)
         else:
-            dup_finder.dump2file("output.txt")
-        messagebox.showinfo('', 'find complete')
+            output_file = os.path.join(os.getcwd(), "output.txt")
+            dup_finder.dump2file(output_file)
+        messagebox.showinfo('',
+                'find complete, please check {0}'.format(output_file))
         self.enable_all_btns()
