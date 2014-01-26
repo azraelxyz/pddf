@@ -17,9 +17,9 @@ class DupFinder:
 
     def find(self):
         LOG.info("%s walk start", self.__class__.__name__)
-        worker = Walker()
-        self.__update_step(worker)
-        file_instances = worker.walk(self.path_list)
+        walker = Walker()
+        self.__update_step(walker)
+        file_instances = walker.walk(self.path_list)
         LOG.info("%s walk end", self.__class__.__name__)
         prev_filter = self.filter_list[0]
         prev_filter.set_files(file_instances)
