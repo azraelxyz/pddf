@@ -23,8 +23,6 @@ import core.algorithm
 import core.dup_finder
 from utils import LOG
 
-#GUI_INPUT_PATH_NUM = 1
-
 INITIAL_DIR = os.getcwd()
 
 
@@ -107,11 +105,27 @@ class DupFinderWindow(tkinter.Frame):
         self.dir_btn4["command"] = self.open_dir4
         self.dir_btn4.grid(row=3, column=7)
 
+        # status field
+        self.status_field = tkinter.Label(self, text="")
+        self.status_field.grid(row=4, column=0, columnspan=7)
+
+        # full scan checkbutton
+        self.full_scan = tkinter.BooleanVar()
+        self.full_scan_chk = tkinter.Checkbutton(self, text="Full Scan",
+                                                 variable=self.full_scan)
+        self.full_scan_chk.grid(row=5, column=0)
+
+        # csv
+        self.output_csv = tkinter.BooleanVar()
+        self.output_csv_chk = tkinter.Checkbutton(self, text="Output a CSV",
+                                                 variable=self.output_csv)
+        self.output_csv_chk.grid(row=5, column=2)
+
         # find button
         self.find_btn = ttk.Button(self)
         self.find_btn["text"] = "Find"
         self.find_btn["command"] = self.start_find
-        self.find_btn.grid(row=4, column=7)
+        self.find_btn.grid(row=5, column=7)
 
     def open_dir1(self):
         path = filedialog.askdirectory(initialdir=self.path_field1.get())
@@ -142,13 +156,24 @@ class DupFinderWindow(tkinter.Frame):
         if path:
             self.path4.set(path)
 
+    def disable_all_btns(self):
+        self.find_btn.configure(state=tkinter.DISABLED)
+        self.dir_btn1.configure(state=tkinter.DISABLED)
+        self.dir_btn2.configure(state=tkinter.DISABLED)
+        self.dir_btn3.configure(state=tkinter.DISABLED)
+        self.dir_btn4.configure(state=tkinter.DISABLED)
+
+    def enable_all_btns(self):
+        self.find_btn.configure(state=tkinter.NORMAL)
+        self.dir_btn1.configure(state=tkinter.NORMAL)
+        self.dir_btn2.configure(state=tkinter.NORMAL)
+        self.dir_btn3.configure(state=tkinter.NORMAL)
+        self.dir_btn4.configure(state=tkinter.NORMAL)
+
     def start_find(self):
         LOG.debug("start_find button click")
+        self.disable_all_btns()
         # start to find
-        filters = [
-            core.algorithm.SizeFilter(),
-            core.algorithm.CharacterFilter()
-        ]
         paths = [self.path_field1.get()]
         if (self.path_field2.get()):
             paths.append(self.path_field2.get())
@@ -157,8 +182,19 @@ class DupFinderWindow(tkinter.Frame):
         if (self.path_field4.get()):
             paths.append(self.path_field4.get())
         LOG.debug(paths)
+        LOG.debug("Full Scan {0}".format(str(self.full_scan.get())))
+        LOG.debug("Ouput csv {0}".format(str(self.output_csv.get())))
+        filters = [
+            core.algorithm.SizeFilter(),
+            core.algorithm.CharacterFilter()
+        ]
+        if (self.full_scan.get()):
+            filters.append(core.algorithm.FullScanner())
         dup_finder = core.dup_finder.DupFinder(paths, filters)
         dup_finder.find()
-        dup_finder.dump2file("output.txt")
-        dup_finder.dump2csv("output.csv")
+        if (self.output_csv.get()):
+            dup_finder.dump2csv("output.csv")
+        else:
+            dup_finder.dump2file("output.txt")
         messagebox.showinfo('', 'find complete')
+        self.enable_all_btns()
