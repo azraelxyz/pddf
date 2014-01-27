@@ -14,6 +14,7 @@ class DupFinder:
         self.filter_list = filter_list
         self.progress = 0
         self.step = None
+        self.total = None
 
     def find(self):
         LOG.info("%s walk start", self.__class__.__name__)
@@ -23,6 +24,7 @@ class DupFinder:
         LOG.info("%s walk end", self.__class__.__name__)
         prev_filter = self.filter_list[0]
         prev_filter.set_files(file_instances)
+        self.total = len(file_instances)
         self.__update_step(prev_filter)
         prev_filter.find()
         for _filter in self.filter_list[1:]:
@@ -35,10 +37,20 @@ class DupFinder:
         self.step = instance
 
     def get_progress(self):
-        return self.instance.progress
+        return self.step.progress
+
+    def get_total(self):
+        return self.total
 
     def get_step(self):
-        return self.instance.__class__.__name__
+        step_index = "0"
+        try:
+            step_index = str(self.filter_list.index(self.step) + 1)
+        except ValueError:
+            pass
+        total_step = len(self.filter_list)
+        step_name = self.step.__class__.__name__
+        return "Step {0}/{1} {2}".format(step_index, total_step, step_name)
 
     def dump2file(self, output_file):
         LOG.debug("%s dump2file", self.__class__.__name__)

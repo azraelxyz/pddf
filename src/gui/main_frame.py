@@ -18,6 +18,8 @@ except ImportError:
     import tkinter.ttk as ttk
 
 import os
+import threading
+import time
 
 import core.algorithm
 import core.dup_finder
@@ -31,6 +33,9 @@ class DupFinderWindow(tkinter.Frame):
         tkinter.Frame.__init__(self, master)
         self.grid()
         self.createWidgets()
+        self.find_thread = None
+        self.status_thread = None
+        self.find_complete = False
 
     def createWidgets(self):
         # path field 1
@@ -172,10 +177,6 @@ class DupFinderWindow(tkinter.Frame):
 
     def start_find(self):
         LOG.debug("start_find button click")
-        do_it = messagebox.askyesno('',
-                    'It may take several minutes to complete please wait')
-        if not do_it:
-            return
         self.disable_all_btns()
         # start to find
         paths = [self.path_field1.get()]
@@ -188,6 +189,12 @@ class DupFinderWindow(tkinter.Frame):
         LOG.debug(paths)
         LOG.debug("Full Scan {0}".format(str(self.full_scan.get())))
         LOG.debug("Ouput csv {0}".format(str(self.output_csv.get())))
+        do_it = messagebox.askyesno('',
+                    'It may take several minutes to complete please wait')
+        if not do_it:
+            self.enable_all_btns()
+            return
+        self.find_complete = False
         filters = [
             core.algorithm.SizeFilter(),
             core.algorithm.CharacterFilter()
@@ -195,6 +202,29 @@ class DupFinderWindow(tkinter.Frame):
         if (self.full_scan.get()):
             filters.append(core.algorithm.FullScanner())
         dup_finder = core.dup_finder.DupFinder(paths, filters)
+        self.status_thread = threading.Thread(target=self.update_status,
+                                                    args=(dup_finder,))
+        self.find_thread = threading.Thread(target=self.background_find,
+                                                    args=(dup_finder,))
+        self.find_thread.start()
+        self.status_thread.start()
+
+    def update_status(self, dup_finder):
+        while True:
+            time.sleep(2)
+            step = dup_finder.get_step()
+            count = dup_finder.get_progress()
+            total = dup_finder.get_total()
+            if total:
+                status = "{0}: {1}/{2}".format(step, str(count), str(total))
+            else:
+                status = "{0}: {1}".format(step, str(count))
+            self.status_field.config(text=status)
+            if self.find_complete == True:
+                self.status_field.config(text="Find complete!!")
+                break
+
+    def background_find(self, dup_finder):
         dup_finder.find()
         if (self.output_csv.get()):
             output_file = os.path.join(os.getcwd(), "output.csv")
@@ -202,6 +232,7 @@ class DupFinderWindow(tkinter.Frame):
         else:
             output_file = os.path.join(os.getcwd(), "output.txt")
             dup_finder.dump2file(output_file)
+        self.find_complete = True
         messagebox.showinfo('',
                 'find complete, please check {0}'.format(output_file))
         self.enable_all_btns()
