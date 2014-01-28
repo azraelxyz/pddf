@@ -54,12 +54,18 @@ class DupFinder:
 
     def dump2file(self, output_file):
         LOG.debug("%s dump2file", self.__class__.__name__)
-        with open(output_file, 'w') as fp:
+        if utils.get_python_version() == 3:
+            fp = codecs.open(output_file, "w", "utf-8")
+        else:
+            fp = open(output_file, 'w')
+        try:
             for files in self.sorted_dup_files:
                 fp.write("================\n")
                 for _file in files:
                     size = utils.size_renderer(_file.size)
                     fp.write("Size: {0}, File: {1}\n".format(size, _file.path))
+        finally:
+            fp.close()
 
     def dump2csv(self, output_csv):
         LOG.debug("%s dump2csv", self.__class__.__name__)
