@@ -161,23 +161,27 @@ class DupFinderWindow(tkinter.Frame):
         if path:
             self.path4.set(path)
 
-    def disable_all_btns(self):
+    def disable_all(self):
         self.find_btn.configure(state=tkinter.DISABLED)
         self.dir_btn1.configure(state=tkinter.DISABLED)
         self.dir_btn2.configure(state=tkinter.DISABLED)
         self.dir_btn3.configure(state=tkinter.DISABLED)
         self.dir_btn4.configure(state=tkinter.DISABLED)
+        self.output_csv_chk.configure(state=tkinter.DISABLED)
+        self.full_scan_chk.configure(state=tkinter.DISABLED)
 
-    def enable_all_btns(self):
+    def enable_all(self):
         self.find_btn.configure(state=tkinter.NORMAL)
         self.dir_btn1.configure(state=tkinter.NORMAL)
         self.dir_btn2.configure(state=tkinter.NORMAL)
         self.dir_btn3.configure(state=tkinter.NORMAL)
         self.dir_btn4.configure(state=tkinter.NORMAL)
+        self.output_csv_chk.configure(state=tkinter.NORMAL)
+        self.full_scan_chk.configure(state=tkinter.NORMAL)
 
     def start_find(self):
         LOG.debug("start_find button click")
-        self.disable_all_btns()
+        self.disable_all()
         # start to find
         paths = [self.path_field1.get()]
         if (self.path_field2.get()):
@@ -192,7 +196,7 @@ class DupFinderWindow(tkinter.Frame):
         do_it = messagebox.askyesno('',
                     'It may take several minutes to complete please wait')
         if not do_it:
-            self.enable_all_btns()
+            self.enable_all()
             return
         self.find_complete = False
         filters = [
@@ -235,4 +239,4 @@ class DupFinderWindow(tkinter.Frame):
         self.find_complete = True
         messagebox.showinfo('',
                 'find complete, please check {0}'.format(output_file))
-        self.enable_all_btns()
+        self.enable_all()
