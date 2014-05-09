@@ -2,7 +2,7 @@ pddf
 ====
 NOTE THAT THE PROGRAM IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL, BUT WITHOUT ANY WARRANTY.
 
-pool man's duplicate data finder
+poor man's duplicate data finder
 
 Given a path, this problem will output a csv or txt file describe the duplicated files.
 
