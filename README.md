@@ -11,8 +11,8 @@ Platform: Windows, Linux, Mac OS
 
 Usage:
 CLI:
-python src/dup_find.py path_to_find_duplicates
+python3 src/dup_find.py path_to_find_duplicates
 
 GUI:
-python src/dup_find_gui.py
+python3 src/dup_find_gui.py
 
