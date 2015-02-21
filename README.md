@@ -2,12 +2,14 @@ pddf
 ====
 NOTE THAT THE PROGRAM IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL, BUT WITHOUT ANY WARRANTY.
 
+Name:
 poor man's duplicate data finder
 
-Given a path, this program will output a csv or txt file describe the duplicated files.
+Feature:
+Given a path, this program will output a csv or txt file that describes the duplicated files.
 
-
-Platform: Windows, Linux, Mac OS
+Platform:
+Windows, Linux, Mac OS
 
 Usage:
 CLI:
